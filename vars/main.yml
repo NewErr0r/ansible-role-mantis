@@ -1,0 +1,24 @@
+---
+# Install packeges for PHP
+install_php_packages: 
+  - php-mysqlnd 
+  - php-dom 
+  - php-simplexml 
+  - php-xml 
+  - php-curl 
+  - php-exif 
+  - php-ftp 
+  - php-gd 
+  - php-iconv 
+  - php-json 
+  - php-mbstring 
+  - php-posix
+
+
+# Install packeges for Mantis 
+install_packeges_mantis:
+  - php 
+  - php-mysqli 
+  - php-mbstring 
+  - php-curl 
+  - unzip

@@ -1,0 +1,16 @@
+<VirtualHost *:80>
+    DocumentRoot "{{ mantis_dir_project }}"
+
+    ServerName {{ server_name }}
+
+    ErrorLog "/var/log/httpd/mantisbt_error_log"
+    CustomLog "/var/log/httpd/mantisbt_access_log" combined
+
+        <Directory "{{ mantis_dir_project }}/">
+            DirectoryIndex index.php 
+            Options -Indexes +FollowSymLinks
+            AllowOverride All
+            Require all granted
+        </Directory>
+
+</VirtualHost>

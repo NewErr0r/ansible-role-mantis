@@ -1,0 +1,16 @@
+---
+# variables for MariaDB
+mariadb_root_password: "P@ssw0rd"
+mariadb_mantis_db_name: "mantisdb"
+mariadb_mantis_username: "mantis"
+mariadb_mantis_passowrd: "P@ssw0rd"
+
+# variables for download Mantis 
+url_download_mantis: "https://sourceforge.net/projects/mantisbt/files/mantis-stable/2.25.2/mantisbt-2.25.2.zip"  # latest stable version
+path_download_mantis: "/root"
+mantis_version: "mantisbt-2.25.2.zip"
+mantis_dir_name: "mantisbt-2.25.2"
+
+# variables for Apache
+mantis_dir_project: /var/www/html/mantisbt
+server_name: "{{ ansible_ssh_host }}"

@@ -1,0 +1,115 @@
+---
+- name: Installing the LAMP stack | install epel-release
+  dnf:
+    name: epel-release
+    state: latest
+
+- name: Installing the LAMP stack | install Apache
+  dnf: 
+    name: 
+      - httpd
+      - httpd-tools
+    state: latest
+
+- name: Installing the LAMP stack | install MariaDB
+  dnf: 
+    name: 
+      - mariadb-server 
+      - mariadb
+      - python3-PyMySQL
+    state: latest
+
+- name: Installing the LAMP stack | start and enable Apache and MariaDB
+  service: 
+    name: "{{ item }}"
+    state: started 
+    enabled: true 
+  loop:
+    - mariadb
+    - httpd
+
+- name: Installing the LAMP stack | configure root password for MariaDB
+  mysql_user:
+    check_implicit_admin: true
+    login_user: root 
+    login_password: "{{ mariadb_root_password }}"
+    user: root 
+    password: "{{ mariadb_root_password }}"
+    host: localhost 
+
+- name: Installing the LAMP stack | install PHP
+  dnf: 
+    name: "{{ install_php_packages }}"
+    state: latest
+
+- name: Installing the Mantis | install packeges for Mantis 
+  dnf: 
+    name: "{{ install_packeges_mantis }}"
+    state: latest
+
+- name: Installing the Mantis | download the latest stable version of MantisBT
+  get_url:
+    url: "{{ url_download_mantis }}"
+    dest: "{{ path_download_mantis }}"
+
+- name: Installing the Mantis | unzip the downloaded file
+  unarchive:
+    src: "{{ path_download_mantis }}/{{ mantis_version }}"
+    dest: "{{ path_download_mantis }}"
+    remote_src: yes
+
+- name: Installing the Mantis | move the extracted file
+  command:
+    cmd: mv {{ mantis_dir_name }} {{ mantis_dir_project }}
+    chdir: "{{ path_download_mantis }}"
+    creates: "{{ mantis_dir_project }}"
+
+- name: Installing the Mantis | change access rights
+  file:
+    path: "{{ mantis_dir_project }}"
+    state: directory
+    recurse: yes 
+    owner: apache
+    group: apache
+
+- name: Installing the Mantis | create database for Mantis
+  mysql_db:
+    name: "{{ mariadb_mantis_db_name }}"
+    state: present
+    login_user: root 
+    login_password: "{{ mariadb_root_password }}"
+  
+- name: Installing the Mantis | create user database for Mantis
+  community.mysql.mysql_user:
+    name: "{{ mariadb_mantis_username }}"
+    password: "{{ mariadb_mantis_passowrd }}"
+    priv: '*.*:ALL,GRANT'
+    host: '%'
+    state: present
+    login_user: root
+    login_password: "{{ mariadb_root_password }}"
+
+- name: Installing the Mantis | create an Apache Virtual Host configuration file for Mantis
+  template:
+    src: mantisbt.conf.j2
+    dest: /etc/httpd/conf.d/mantisbt.conf
+  notify:
+    - Restart Apache
+
+- name: Installing the Mantis | allow service http for the firewall
+  firewalld: 
+    service: http 
+    permanent: yes 
+    state: enabled 
+  notify: 
+    - Restart firewalld
+
+- name: Disable SELinux 
+  ansible.posix.selinux:
+    state: disabled
+
+- name: Disable SELinux now
+  command: 
+    cmd: setenforce 0 
+  when: 
+    - ansible_selinux.status == "enabled"
